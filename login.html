@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login – SpeakUp</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+  <h2>Login Anonymously</h2>
+  <button onclick="loginAnon()">Login</button>
+  <script type="module">
+    import { auth } from './firebase.js';
+    import { signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+    function loginAnon() {
+      signInAnonymously(auth)
+        .then(() => window.location.href = 'chat.html')
+        .catch(error => alert(error.message));
+    }
+
+    window.loginAnon = loginAnon;
+  </script>
+</body>
+</html>

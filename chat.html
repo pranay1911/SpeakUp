@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Chat – SpeakUp</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+  <h2>Anonymous Chat Room</h2>
+  <div id="chatBox"></div>
+  <input type="text" id="msgInput" placeholder="Type a message..." />
+  <button onclick="sendMsg()">Send</button>
+
+  <script type="module">
+    import { database } from './firebase.js';
+    import { ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+    let username = "User-" + Math.floor(Math.random() * 10000);
+    const msgRef = ref(database, 'messages');
+
+    document.getElementById("msgInput").addEventListener("keypress", e => {
+      if (e.key === "Enter") sendMsg();
+    });
+
+    function sendMsg() {
+      const msg = document.getElementById("msgInput").value.trim();
+      if (msg !== "") {
+        push(msgRef, { name: username, text: msg });
+        document.getElementById("msgInput").value = "";
+      }
+    }
+
+     onChildAdded(msgRef, data => {
+            const { name, text } = data.val();
+            const msg = document.createElement("div");
+            msg.textContent = `${name}: ${text}`; // ✅ Fixed unterminated string
+            document.getElementById("chatBox").appendChild(msg);
+        });
+
+    window.sendMsg = sendMsg;
+  </script>
+</body>
+</html>
+
