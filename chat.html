@@ -12,34 +12,47 @@
   <input type="text" id="msgInput" placeholder="Type a message..." />
   <button onclick="sendMsg()">Send</button>
 
-  <script type="module">
-    import { database } from './firebase.js';
-    import { ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+ <script type="module">
+  import { auth, database } from './firebase.js';
+  import { signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
-    let username = "User-" + Math.floor(Math.random() * 10000);
-    const msgRef = ref(database, 'messages');
+  const username = localStorage.getItem("nickname") || "Anonymous";
+  document.getElementById("user-name").innerText = username;
 
-    document.getElementById("msgInput").addEventListener("keypress", e => {
-      if (e.key === "Enter") sendMsg();
+  signInAnonymously(auth)
+    .then(() => {
+      console.log("✅ Anonymous login successful");
+    })
+    .catch((error) => {
+      alert("❌ Firebase login failed: " + error.message);
     });
 
-    function sendMsg() {
-      const msg = document.getElementById("msgInput").value.trim();
-      if (msg !== "") {
-        push(msgRef, { name: username, text: msg });
-        document.getElementById("msgInput").value = "";
-      }
+  const chatBox = document.getElementById("chat-box");
+  const messageInput = document.getElementById("message");
+  const chatRef = ref(database, "messages");
+
+  function sendMessage() {
+    const message = messageInput.value.trim();
+    if (message !== "") {
+      push(chatRef, {
+        name: username,
+        message: message
+      });
+      messageInput.value = "";
     }
+  }
 
-     onChildAdded(msgRef, data => {
-            const { name, text } = data.val();
-            const msg = document.createElement("div");
-            msg.textContent = `${name}: ${text}`; // ✅ Fixed unterminated string
-            document.getElementById("chatBox").appendChild(msg);
-        });
+  window.sendMessage = sendMessage;
 
-    window.sendMsg = sendMsg;
-  </script>
+  onChildAdded(chatRef, (data) => {
+    const msg = data.val();
+    const newMsg = document.createElement("p");
+    newMsg.textContent = '${msg.name}: ${msg.message}';
+    chatBox.appendChild(newMsg);
+    chatBox.scrollTop = chatBox.scrollHeight;
+  });
+</script>
 </body>
 </html>
 
